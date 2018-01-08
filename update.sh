@@ -1,8 +1,8 @@
 #!/bin/bash
 # Force stop on first error.
 set -e
-if [ $# -ne 2 ]; then
-    echo "$0 <error prone version> <error prone javac version>" >&2
+if [ $# -ne 2 -a $# -ne 3]; then
+    echo "$0 <error prone version> <error prone javac version> [checkerframework version]" >&2
     exit 1;
 fi
 if [ -z "$ANDROID_BUILD_TOP" ]; then
@@ -11,11 +11,17 @@ if [ -z "$ANDROID_BUILD_TOP" ]; then
 fi
 EP_VERSION="$1"
 JAVAC_VERSION="$2"
+# checkerframework
+CF_VERSION="$3"
 JAR_REPO="https://oss.sonatype.org/service/local/repositories/releases/content/com/google/errorprone"
 EP_JAR_URL="${JAR_REPO}/error_prone_core/${EP_VERSION}/error_prone_core-${EP_VERSION}-with-dependencies.jar"
 EP_ANNO_JAR_URL="${JAR_REPO}/error_prone_annotations/${EP_VERSION}/error_prone_annotations-${EP_VERSION}.jar"
 JAVAC_JAR_URL="${JAR_REPO}/javac/${JAVAC_VERSION}/javac-${JAVAC_VERSION}.jar"
 JAVAC_SOURCES_JAR_URL="${JAR_REPO}/javac/${JAVAC_VERSION}/javac-${JAVAC_VERSION}-sources.jar"
+CF_DATAFLOW_JAR_URL="http://repo1.maven.org/maven2/org/checkerframework/dataflow/${CF_VERSION}/dataflow-${CF_VERSION}.jar"
+CF_DATAFLOW_SOURCES_JAR_URL="http://repo1.maven.org/maven2/org/checkerframework/dataflow/${CF_VERSION}/dataflow-${CF_VERSION}-sources.jar"
+CF_JAVACUTIL_JAR_URL="http://repo1.maven.org/maven2/org/checkerframework/javacutil/${CF_VERSION}/javacutil-${CF_VERSION}.jar"
+CF_JAVACUTIL_SOURCES_JAR_URL="http://repo1.maven.org/maven2/org/checkerframework/javacutil/${CF_VERSION}/javacutil-${CF_VERSION}-sources.jar"
 TOOLS_DIR=$(dirname $0)
 
 function update_jar {
@@ -48,3 +54,15 @@ perl -pi -e "\
     s|\"(external/error_prone/error_prone/error_prone_core).*\"|\"\\1-${EP_VERSION}-with-dependencies.jar\"|;\
     s|\"(external/error_prone/error_prone/error_prone_annotations).*\"|\"\\1-${EP_VERSION}.jar\"|;\
 " "$TOOLS_DIR/soong/error_prone.go"
+
+if [ "${CF_VERSION}" != '' ]; then
+  rm -f checkerframework/*.jar*
+  update_jar "${CF_VERSION}" "${CF_DATAFLOW_JAR_URL}" "${TOOLS_DIR}/checkerframework"
+  update_jar "${CF_VERSION}" "${CF_DATAFLOW_SOURCES_JAR_URL}" "${TOOLS_DIR}/checkerframework"
+  update_jar "${CF_VERSION}" "${CF_JAVACUTIL_JAR_URL}" "${TOOLS_DIR}/checkerframework"
+  update_jar "${CF_VERSION}" "${CF_JAVACUTIL_SOURCES_JAR_URL}" "${TOOLS_DIR}/checkerframework"
+  perl -pi -e "\
+    s|\"(external/error_prone/checkerframework/dataflow).*\"|\"\\1-${CF_VERSION}.jar\"|;\
+    s|\"(external/error_prone/checkerframework/javacutil).*\"|\"\\1-${CF_VERSION}.jar\"|;\
+  " "$TOOLS_DIR/soong/error_prone.go"
+fi
