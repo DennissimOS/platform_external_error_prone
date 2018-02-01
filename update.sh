@@ -1,7 +1,7 @@
 #!/bin/bash
 # Force stop on first error.
 set -e
-if [ $# -ne 2 -a $# -ne 3]; then
+if [ $# -ne 2 -a $# -ne 3 ]; then
     echo "$0 <error prone version> <error prone javac version> [checkerframework version]" >&2
     exit 1;
 fi
