@@ -23,12 +23,12 @@ import (
 func init() {
 	// These values are set into build/soong/java/config/config.go so that soong doesn't have any
 	// references to external/error_prone, which may not always exist.
-	config.ErrorProneJavacJar = "external/error_prone/javac/javac-9-dev-r3297-4.jar"
-	config.ErrorProneJar = "external/error_prone/error_prone/error_prone_core-2.0.19-with-dependencies.jar"
+	config.ErrorProneJavacJar = "external/error_prone/javac/javac-9+181-r4173-1.jar"
+	config.ErrorProneJar = "external/error_prone/error_prone/error_prone_core-2.2.0-with-dependencies.jar"
 	config.ErrorProneClasspath = strings.Join([]string{
-		"external/error_prone/error_prone/error_prone_annotations-2.0.19.jar",
-		"external/error_prone/checkerframework/dataflow-1.8.10.jar",
-		"external/error_prone/checkerframework/javacutil-1.8.10.jar",
+		"external/error_prone/error_prone/error_prone_annotations-2.2.0.jar",
+		"external/error_prone/checkerframework/dataflow-2.2.2.jar",
+		"external/error_prone/checkerframework/javacutil-2.2.2.jar",
 		"external/error_prone/jFormatString/jFormatString-3.0.0.jar",
 	}, ":")
 
@@ -37,10 +37,12 @@ func init() {
 		"-Xep:AsyncCallableReturnsNull:ERROR",
 		"-Xep:AsyncFunctionReturnsNull:ERROR",
 		"-Xep:BundleDeserializationCast:ERROR",
+		"-Xep:ChainingConstructorIgnoresParameter:ERROR",
 		"-Xep:CompatibleWithAnnotationMisuse:ERROR",
 		"-Xep:CompileTimeConstant:ERROR",
 		"-Xep:DaggerProvidesNull:ERROR",
 		"-Xep:DoNotCall:ERROR",
+		"-Xep:EqualsNaN:ERROR",
 		"-Xep:ForOverride:ERROR",
 		"-Xep:FunctionalInterfaceMethodChanged:ERROR",
 		"-Xep:FuturesGetCheckedIllegalExceptionType:ERROR",
@@ -52,10 +54,12 @@ func init() {
 		"-Xep:IncompatibleArgumentType:ERROR",
 		"-Xep:IndexOfChar:ERROR",
 		"-Xep:InjectMoreThanOneScopeAnnotationOnClass:ERROR",
+		"-Xep:InvalidPatternSyntax:ERROR",
 		"-Xep:JavaxInjectOnAbstractMethod:ERROR",
 		"-Xep:JUnit4SetUpNotRun:ERROR",
 		"-Xep:JUnit4TearDownNotRun:ERROR",
-		"-Xep:JUnit4TestNotRun:ERROR",
+                // Temporarily disabled for update. b/72076216
+		// "-Xep:JUnit4TestNotRun:ERROR",
 		"-Xep:JUnitAssertSameCheck:ERROR",
 		"-Xep:LiteByteStringUtf8:ERROR",
 		"-Xep:LoopConditionChecker:ERROR",
@@ -94,5 +98,10 @@ func init() {
 		"-XDuseGraphInference=true",
 		"-XDandroidCompatible=true",
 		"-XepAllErrorsAsWarnings",
+		// We are not interested in Guava recommendations
+                // for String.split.
+                "-Xep:StringSplitter:OFF",
+		"-Xmaxwarns 9999999",  // As we emit errors as warnings,
+		                       // increase the warning limit.
 	}, " ")
 }
